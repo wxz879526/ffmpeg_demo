@@ -1,0 +1,14 @@
+prefix=/home/wenxinzhou/ffmpeg_build/build/out
+exec_prefix=${prefix}
+libdir=/home/wenxinzhou/ffmpeg_build/build/out/lib
+includedir=/home/wenxinzhou/ffmpeg_build/build/out/include
+
+Name: libavformat
+Description: FFmpeg container format library
+Version: 58.35.100
+Requires: 
+Requires.private: libavcodec >= 58.62.100, libswresample >= 3.6.100, libavutil >= 56.36.100
+Conflicts:
+Libs: -L${libdir}  -lavformat 
+Libs.private: secur32.lib ws2_32.lib
+Cflags: -I${includedir}

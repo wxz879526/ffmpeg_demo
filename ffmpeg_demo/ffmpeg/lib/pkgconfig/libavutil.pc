@@ -1,0 +1,14 @@
+prefix=/home/wenxinzhou/ffmpeg_build/build/out
+exec_prefix=${prefix}
+libdir=/home/wenxinzhou/ffmpeg_build/build/out/lib
+includedir=/home/wenxinzhou/ffmpeg_build/build/out/include
+
+Name: libavutil
+Description: FFmpeg utility library
+Version: 56.36.100
+Requires: 
+Requires.private: 
+Conflicts:
+Libs: -L${libdir}  -lavutil 
+Libs.private: user32.lib bcrypt.lib
+Cflags: -I${includedir}
