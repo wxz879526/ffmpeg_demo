@@ -66,6 +66,8 @@ static bool ffmpeg_image_reformat_frame(ffmpeg_image *info, AVFrame *frame, uint
 		info->format = AV_PIX_FMT_RGBA;
 		return true;
 	}
+
+	return false;
 }
 
 int main(int argc, char *argv[])
@@ -150,7 +152,6 @@ int main(int argc, char *argv[])
 		SDL_Delay(50);
 	}
 
-fail:
 	av_packet_unref(&packet);
 	av_frame_free(&frame);
 	avcodec_close(info.decoder_ctx);
