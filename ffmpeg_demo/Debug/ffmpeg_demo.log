@@ -1,3 +1,0 @@
-﻿  ffmpeg_demo.cpp
-c:\users\wenxinzhou\desktop\demo\ffmpeg_demo\ffmpeg_demo\ffmpeg\include\libavutil\rational.h : warning C4819: The file contains a character that cannot be represented in the current code page (936). Save the file in Unicode format to prevent data loss
-  ffmpeg_demo.vcxproj -> C:\Users\wenxinzhou\Desktop\demo\ffmpeg_demo\Debug\ffmpeg_demo.exe
