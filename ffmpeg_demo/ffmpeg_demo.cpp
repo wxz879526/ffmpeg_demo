@@ -5,6 +5,7 @@
 extern "C" {
 #include "SDL.h"
 #include "libavformat/avformat.h"
+#include "libswscale/swscale.h"
 }
 
 #include "ffmpeg_demo.h"
@@ -25,6 +26,47 @@ struct ffmpeg_image
 	int cy;
 	enum AVPixelFormat format;
 };
+
+static bool ffmpeg_image_reformat_frame(ffmpeg_image *info, AVFrame *frame, uint8_t *out, int lineSize)
+{
+	struct SwsContext *sws_ctx = nullptr;
+	int ret = 0;
+
+	if (info->format == AV_PIX_FMT_RGBA || info->format == AV_PIX_FMT_BGRA || info->format == AV_PIX_FMT_BGR0)
+	{
+		if (lineSize != frame->linesize[0])
+		{
+			int min_size = lineSize < frame->linesize[0] ? lineSize : frame->linesize[0];
+
+			for (int y = 0; y < info->cy; ++y)
+			{
+				memcpy(out + y*lineSize, frame->data[0] + y * frame->linesize[0], min_size);
+			}
+		}
+		else
+		{
+			memcpy(out, frame->data[0], lineSize*info->cy);
+		}
+	}
+	else
+	{
+		sws_ctx = sws_getContext(info->cx, info->cy, info->format, info->cx,
+			info->cy, AV_PIX_FMT_BGRA, SWS_POINT, NULL, NULL, NULL);
+		if (!sws_ctx)
+		{
+			return false;
+		}
+
+		ret = sws_scale(sws_ctx, (const uint8_t * const *)frame->data, frame->linesize, 0, info->cy,
+			&out, &lineSize);
+		sws_freeContext(sws_ctx);
+		if (ret < 0)
+			return false;
+
+		info->format = AV_PIX_FMT_RGBA;
+		return true;
+	}
+}
 
 int main(int argc, char *argv[])
 {
@@ -61,10 +103,58 @@ int main(int argc, char *argv[])
 	info.cy = info.decoder_ctx->height;
 	info.format = info.decoder_ctx->pix_fmt;
 
+	auto pData = new uint8_t[info.cx * info.cy * 4];
+	memset(pData, 0, info.cx * info.cy * 4);
+
+	AVPacket packet = { 0 };
+	bool success = false;
+	AVFrame *frame = av_frame_alloc();
+	int got_frame = 0;
+	ret = av_read_frame(info.fmt_ctx, &packet);
+	while (!got_frame)
+	{
+#if LIBAVFORMAT_VERSION_INT >= AV_VERSION_INT(57, 40, 101)
+		ret = avcodec_send_packet(info.decoder_ctx, &packet);
+		if (0 == ret)
+			ret = avcodec_receive_frame(info.decoder_ctx, frame);
+		got_frame = (0 == ret);
+		if (ret == AVERROR_EOF || ret == AVERROR(EAGAIN))
+			ret = 0;
+#else
+		ret = avcodec_decode_video2(info.decoder_ctx, frame, &got_frame, &packet);
+#endif
+		if (ret < 0)
+			return -1;//goto fail;
+	}
+
+	success = ffmpeg_image_reformat_frame(&info, frame, pData, info.cx*4);
+
+	SDL_Renderer *sdlRender = SDL_CreateRenderer(screen, -1, 0);
+	auto pixFmt = SDL_PIXELFORMAT_RGBA32;
+	SDL_Texture *pSdlTexture = SDL_CreateTexture(sdlRender, pixFmt, SDL_TEXTUREACCESS_STREAMING,
+		info.cx, info.cy);
+	
+
 	while (1)
 	{
+		SDL_Rect sdlRect;
+		SDL_UpdateTexture(pSdlTexture, NULL, pData, info.cx*4);
+		sdlRect.x = 0;
+		sdlRect.y = 0;
+		sdlRect.w = info.cx;
+		sdlRect.h = info.cy;
+		SDL_RenderClear(sdlRender);
+		SDL_RenderCopy(sdlRender, pSdlTexture, NULL, &sdlRect);
+		SDL_RenderPresent(sdlRender);
+
 		SDL_Delay(50);
 	}
+
+fail:
+	av_packet_unref(&packet);
+	av_frame_free(&frame);
+	avcodec_close(info.decoder_ctx);
+	avformat_close_input(&info.fmt_ctx);
 
 	return 0;
 }
