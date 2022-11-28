@@ -1,12 +1,12 @@
-#irender execute
-project(5.texture)
+#simple execute
+project(1.simple)
 
 set(PP_SOURCES_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 file(GLOB_RECURSE PP_SOURCES_ALL ${PP_SOURCES_DIR}/*.h ${PP_SOURCES_DIR}/*.cpp ${PP_SOURCES_DIR}/*.qrc)
 set(PP_SOURCES ${PP_SOURCES_ALL})
 
 add_executable(${PROJECT_NAME} ${PP_SOURCES})
-#add_dependencies(${PROJECT_NAME} shared irender)
+#add_dependencies(${PROJECT_NAME} shared simple)
 target_precompile_headers(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/pch.h)
 # update translation file and generate the rcc resource file
 #updateDependentResIfNec(${PROJECT_NAME} ${CMAKE_SOURCE_DIR}/../studioapplication/Application/Windows/$<CONFIG>)
@@ -33,10 +33,10 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/ffmpeg-4.2.1-win32-dev/include)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/ffmpeg/include)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/sdl2/include)
 
-target_link_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/ffmpeg-4.2.1-win32-dev/lib)
+target_link_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/ffmpeg/lib)
 target_link_directories(${PROJECT_NAME} PRIVATE ${CMAKE_SOURCE_DIR}/thirdparty/sdl2/lib)
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE -DUNICODE -D_UNICODE)
@@ -69,4 +69,5 @@ set (EXTRA_LIBS
     Qt5::Widgets
     Qt5::Xml)
 target_link_libraries(${PROJECT_NAME} ${EXTRA_LIBS})
+target_link_options(${PROJECT_NAME} PUBLIC "$<$<C_COMPILER_ID:MSVC>:-SAFESEH:NO>")
 target_compile_options(${PROJECT_NAME} PRIVATE ${STUDIO_COMPILE_OPTIONS})
