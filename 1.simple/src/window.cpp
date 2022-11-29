@@ -8,7 +8,7 @@ Window::Window()
 
 Window::~Window()
 {
-
+	
 }
 
 void Window::initializeGL()
