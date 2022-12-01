@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/">
+	    <file>fshader.glsl</file>
+	    <file>vshader.glsl</file>
+	    <file>container.jpg</file>
+    </qresource>
+</RCC>

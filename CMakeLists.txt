@@ -83,3 +83,4 @@ find_package(Qt5 5.14 REQUIRED
 )
 
 add_subdirectory(1.simple)
+add_subdirectory(2.decode_use)
